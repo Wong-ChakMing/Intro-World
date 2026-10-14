@@ -326,7 +326,8 @@ img {
   height: min(600px, calc(100dvh - 24px));
   display: flex;
   flex-direction: column;
-  padding: calc(var(--px) * 4) calc(var(--px) * 7) calc(var(--px) * 7);
+  /* The 4px frame plus this padding gives the game's 7px inset around the slot grid. */
+  padding: calc(var(--px) * 2) calc(var(--px) * 3) calc(var(--px) * 3);
   border: calc(var(--px) * 4) solid transparent;
   border-image: var(--frame-panel) 4 fill / calc(var(--px) * 4) stretch;
   image-rendering: pixelated;
@@ -402,14 +403,14 @@ img {
 
 .slots {
   display: grid;
-  grid-template-columns: repeat(9, calc(var(--px) * 18));
+  grid-template-columns: repeat(9, minmax(0, calc(var(--px) * 18)));
   flex: none;
 }
 
 .slot {
   position: relative;
-  width: calc(var(--px) * 18);
-  height: calc(var(--px) * 18);
+  width: 100%;
+  aspect-ratio: 1;
   padding: 0;
   border: var(--px) solid transparent;
   border-image: var(--frame-slot) 1 fill / var(--px) stretch;
@@ -419,8 +420,8 @@ img {
 
 .slot img {
   display: block;
-  width: calc(var(--px) * 16);
-  height: calc(var(--px) * 16);
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
