@@ -7,6 +7,7 @@ export const profile = {
   phoneHref: 'tel:+85269397812',
   github: 'https://github.com/Wong-ChakMing',
   linkedin: 'https://www.linkedin.com/in/wong-chak-ming-31b055352/',
+  site: 'https://wong-chakming.github.io/Intro-World/',
   cv: './Wong_Chak_Ming_CV_2026.pdf',
 };
 
@@ -126,13 +127,14 @@ export const chests = [
       },
       {
         icon: 'chest-oak',
-        name: 'This world',
+        name: 'Intro World',
         rarity: 'white',
-        meta: 'Personal website · Three.js, Vite',
-        text: [
-          'The island, the chests and the stick man are drawn in real time with Three.js. Every texture is generated in code, pixel by pixel.',
+        meta: 'Personal website · Three.js, Vite · GitHub Pages',
+        list: [
+          'An interactive Minecraft-styled website where a stick-man guide walks visitors to chests that open onto his experience, projects, skills and contact details.',
+          'The voxel world, character and chest interface are built in real time with Three.js and Vite, with every texture made in code.',
         ],
-        links: [{ label: 'See his GitHub', href: profile.github }],
+        links: [{ label: 'See the code', href: 'https://github.com/Wong-ChakMing/Intro-World' }],
       },
     ],
   },

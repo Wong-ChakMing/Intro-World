@@ -220,6 +220,7 @@ export function createUI({ chests, profile, onRequestChest, onClosed }) {
         el('a', { class: 'mc-button', href: profile.cv, download: true, text: 'Download PDF' }),
         el('a', { class: 'mc-button', href: profile.github, target: '_blank', rel: 'noopener', text: 'GitHub' }),
         el('a', { class: 'mc-button', href: profile.linkedin, target: '_blank', rel: 'noopener', text: 'LinkedIn' }),
+        el('a', { class: 'mc-button', href: profile.site, target: '_blank', rel: 'noopener', text: 'Website' }),
       ]),
     ]),
     ...chests
