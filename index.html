@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Wong Chak Ming · AIoT Engineer</title>
+    <meta
+      name="description"
+      content="Wong Chak Ming, AIoT Engineer (Software) at Mednnect and HKUST Electronic and Computer Engineering graduate. Explore his experience, projects and skills in a small Minecraft-style world."
+    />
+    <meta name="theme-color" content="#78a7ff" />
+    <meta property="og:title" content="Wong Chak Ming · AIoT Engineer" />
+    <meta property="og:description" content="Open the chests to see his experience, projects, skills and contact details." />
+  </head>
+  <body>
+    <div class="loading" id="loading" role="status">
+      <p>Generating world</p>
+      <div class="bar"><span></span></div>
+    </div>
+
+    <canvas id="scene" aria-label="A small Minecraft-style island with five chests and a stick-man guide"></canvas>
+
+    <header class="title">
+      <h1>Wong Chak Ming</h1>
+      <p>AIoT Engineer (Software) at Mednnect · BEng ECE, HKUST</p>
+      <span class="splash" aria-hidden="true">From sensor to app!</span>
+    </header>
+
+    <nav class="actions" aria-label="CV">
+      <button class="mc-button" type="button" id="open-cv">Read the whole CV</button>
+      <a class="mc-button" href="./Wong_Chak_Ming_CV_2026.pdf" download>Download PDF</a>
+    </nav>
+
+    <div class="chat" id="chat" aria-live="polite"></div>
+
+    <div class="hotbar-wrap">
+      <p class="held is-faded" id="held" aria-hidden="true"></p>
+      <nav class="hotbar" id="hotbar" aria-label="Chests"></nav>
+    </div>
+
+    <div class="dim" id="dim"></div>
+
+    <section class="gui" id="gui" role="dialog" aria-modal="true" aria-labelledby="gui-title" hidden>
+      <div class="gui-head">
+        <h2 id="gui-title"></h2>
+        <button class="gui-close" type="button" data-close aria-label="Close chest">
+          <svg viewBox="0 0 5 5" aria-hidden="true"><path d="M0 0h1v1H0zM4 0h1v1H4zM1 1h1v1H1zM3 1h1v1H3zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3zM0 4h1v1H0zM4 4h1v1H4z" /></svg>
+        </button>
+      </div>
+      <div class="slots" id="slots" role="toolbar" aria-label="Items in this chest"></div>
+      <p class="detail-label" id="detail-label">Selected item</p>
+      <article class="detail" id="detail" aria-live="polite"></article>
+    </section>
+
+    <section class="gui book" id="book" role="dialog" aria-modal="true" aria-labelledby="book-title" hidden>
+      <div class="gui-head">
+        <h2 id="book-title">Wong Chak Ming</h2>
+        <button class="gui-close" type="button" data-close aria-label="Close CV">
+          <svg viewBox="0 0 5 5" aria-hidden="true"><path d="M0 0h1v1H0zM4 0h1v1H4zM1 1h1v1H1zM3 1h1v1H3zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3zM0 4h1v1H0zM4 4h1v1H4z" /></svg>
+        </button>
+      </div>
+      <div class="detail" id="book-body" tabindex="0"></div>
+    </section>
+
+    <noscript>
+      <p style="position: fixed; inset: auto 16px 16px; padding: 12px; background: #000; color: #fff; font: 18px/1.5 sans-serif">
+        This world needs JavaScript. Wong Chak Ming · Cmwong0282@gmail.com ·
+        <a style="color: #ffff55" href="./Wong_Chak_Ming_CV_2026.pdf">Download the CV (PDF)</a>
+      </p>
+    </noscript>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

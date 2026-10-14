@@ -1,0 +1,788 @@
+:root {
+  --px: 3px;
+  --sky: #78a7ff;
+  --gui: #c6c6c6;
+  --gui-text: #404040;
+  --slot: #8b8b8b;
+  --ink: #ffffff;
+  --muted: #b4b4b4;
+  --yellow: #ffff55;
+  --aqua: #55ffff;
+  --pane: #141414;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --font: 'Pixelify Sans', ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --px: 2px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--sky);
+  font-family: var(--font);
+  color: var(--ink);
+  -webkit-font-smoothing: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #3f6fd8;
+  color: #fff;
+}
+
+img {
+  image-rendering: pixelated;
+}
+
+:focus-visible {
+  outline: var(--px) solid var(--yellow);
+  outline-offset: var(--px);
+}
+
+#scene {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+#scene.hovering {
+  cursor: pointer;
+}
+
+.labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.nametag {
+  padding: 2px 8px 3px;
+  background: rgb(0 0 0 / 0.42);
+  font-size: 18px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  transition: background-color 150ms ease;
+}
+
+.nametag.is-hover {
+  background: rgb(0 0 0 / 0.72);
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #3f3f15;
+}
+
+/* Title, top left */
+.title {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  left: max(24px, env(safe-area-inset-left));
+  max-width: min(760px, calc(100vw - 48px));
+  pointer-events: none;
+}
+
+.title h1 {
+  margin: 0;
+  font-size: clamp(40px, 6.2vw, 92px);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: #a2a2a2;
+  background: var(--stone) 0 0 / calc(var(--px) * 16) repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(3px 0 0 #1a1a1a) drop-shadow(-3px 0 0 #1a1a1a) drop-shadow(0 3px 0 #1a1a1a) drop-shadow(0 -3px 0 #1a1a1a)
+    drop-shadow(0 6px 0 rgb(0 0 0 / 0.3));
+}
+
+.title p {
+  display: inline-block;
+  margin: 14px 0 0;
+  padding: 4px 10px 5px;
+  background: rgb(0 0 0 / 0.5);
+  font-size: clamp(16px, 1.5vw, 20px);
+  line-height: 1.35;
+  text-shadow: 2px 2px 0 #3f3f3f;
+}
+
+.title .splash {
+  display: block;
+  width: max-content;
+  margin-top: 10px;
+  color: var(--yellow);
+  font-size: clamp(16px, 1.4vw, 20px);
+  text-shadow: 2px 2px 0 #3f3f15;
+  transform: rotate(-4deg);
+  transform-origin: left center;
+  animation: splash 900ms ease-in-out infinite alternate;
+}
+
+@keyframes splash {
+  from {
+    transform: rotate(-4deg) scale(1);
+  }
+  to {
+    transform: rotate(-4deg) scale(1.06);
+  }
+}
+
+/* Minecraft buttons */
+.mc-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--px) * 14);
+  padding: 0 calc(var(--px) * 5);
+  border: calc(var(--px) * 2) solid transparent;
+  border-image: var(--frame-button) 2 fill / calc(var(--px) * 2) stretch;
+  image-rendering: pixelated;
+  background: none;
+  color: var(--ink);
+  font: 500 18px/1 var(--font);
+  text-decoration: none;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  cursor: pointer;
+  transition: transform 140ms var(--ease-out);
+  user-select: none;
+}
+
+.mc-button:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mc-button:hover {
+    border-image-source: var(--frame-button-hover);
+    color: var(--yellow);
+    text-shadow: 2px 2px 0 #3f3f15;
+  }
+}
+
+.mc-button:focus-visible {
+  border-image-source: var(--frame-button-hover);
+  outline: none;
+  color: var(--yellow);
+}
+
+.actions {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  right: max(24px, env(safe-area-inset-right));
+  display: flex;
+  gap: 8px;
+}
+
+/* Chat, bottom left */
+.chat {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 8px);
+  width: min(460px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  pointer-events: none;
+}
+
+.chat p {
+  margin: 0;
+  padding: 3px 8px 4px;
+  background: rgb(0 0 0 / 0.5);
+  font-size: 18px;
+  line-height: 1.35;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  transition: opacity 400ms ease, transform 180ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.chat p.is-fading {
+  opacity: 0;
+}
+
+.chat .who {
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #3f3f15;
+}
+
+/* Hotbar, bottom centre */
+.hotbar-wrap {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.held {
+  min-height: 24px;
+  margin: 0;
+  font-size: 20px;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+.held.is-faded {
+  opacity: 0;
+}
+
+.hotbar {
+  display: flex;
+  padding: var(--px);
+  background: rgb(20 20 20 / 0.62);
+  border: var(--px) solid #000;
+  box-shadow: inset 0 0 0 var(--px) #6b6b6b;
+}
+
+.hotbar button {
+  position: relative;
+  width: calc(var(--px) * 20);
+  height: calc(var(--px) * 20);
+  padding: 0;
+  border: var(--px) solid transparent;
+  background: rgb(139 139 139 / 0.28);
+  box-shadow: inset 0 0 0 var(--px) rgb(0 0 0 / 0.45);
+  cursor: pointer;
+  transition: transform 120ms var(--ease-out);
+}
+
+.hotbar button:active {
+  transform: scale(0.94);
+}
+
+.hotbar button[aria-current='true'] {
+  border-color: #fff;
+  box-shadow: inset 0 0 0 var(--px) #000;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hotbar button:hover {
+    background: rgb(255 255 255 / 0.3);
+  }
+}
+
+.hotbar img {
+  display: block;
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 16);
+  margin: auto;
+}
+
+.hotbar .key {
+  position: absolute;
+  right: 1px;
+  bottom: -1px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 2px 2px 0 #3f3f3f;
+}
+
+/* Dim layer behind open screens, as in the game */
+.dim {
+  position: fixed;
+  inset: 0;
+  background: rgb(16 16 16 / 0.62);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.dim.is-on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Chest screen */
+.gui {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--px) * 176);
+  max-width: calc(100vw - 16px);
+  /* Fixed height: switching items must never move the slots under the pointer. */
+  height: min(600px, calc(100dvh - 24px));
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--px) * 4) calc(var(--px) * 7) calc(var(--px) * 7);
+  border: calc(var(--px) * 4) solid transparent;
+  border-image: var(--frame-panel) 4 fill / calc(var(--px) * 4) stretch;
+  image-rendering: pixelated;
+  color: var(--gui-text);
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(10px) scale(0.97);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+
+.gui[hidden] {
+  display: none;
+}
+
+.gui.is-open {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.gui.is-closing {
+  transition-duration: 140ms;
+}
+
+.gui-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: calc(var(--px) * -1) 0 calc(var(--px) * 3);
+}
+
+.gui h2 {
+  margin: 0;
+  font-size: calc(var(--px) * 8);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.gui h2 small {
+  margin-left: 0.5em;
+  font-size: 0.62em;
+  color: #6b6b6b;
+}
+
+.gui-close {
+  display: grid;
+  place-items: center;
+  width: calc(var(--px) * 11);
+  height: calc(var(--px) * 11);
+  padding: 0;
+  border: var(--px) solid transparent;
+  border-image: var(--frame-button) 2 fill / var(--px) stretch;
+  image-rendering: pixelated;
+  background: none;
+  cursor: pointer;
+  transition: transform 120ms var(--ease-out);
+}
+
+.gui-close:active {
+  transform: scale(0.94);
+}
+
+.gui-close svg {
+  width: calc(var(--px) * 5);
+  height: calc(var(--px) * 5);
+  fill: #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gui-close:hover {
+    border-image-source: var(--frame-button-hover);
+  }
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(9, calc(var(--px) * 18));
+  flex: none;
+}
+
+.slot {
+  position: relative;
+  width: calc(var(--px) * 18);
+  height: calc(var(--px) * 18);
+  padding: 0;
+  border: var(--px) solid transparent;
+  border-image: var(--frame-slot) 1 fill / var(--px) stretch;
+  image-rendering: pixelated;
+  background: none;
+}
+
+.slot img {
+  display: block;
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 16);
+  pointer-events: none;
+}
+
+button.slot {
+  cursor: pointer;
+}
+
+button.slot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 80ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  button.slot:hover::after {
+    opacity: 0.45;
+  }
+}
+
+button.slot[aria-pressed='true'] {
+  outline: var(--px) solid #fff;
+  outline-offset: calc(var(--px) * -1);
+  z-index: 1;
+}
+
+button.slot:focus-visible {
+  outline-color: var(--yellow);
+  outline-offset: calc(var(--px) * -1);
+}
+
+button.slot:active img {
+  transform: scale(0.92);
+}
+
+.detail-label {
+  margin: calc(var(--px) * 4) 0 calc(var(--px) * 2);
+  font-size: calc(var(--px) * 6);
+  line-height: 1;
+}
+
+.detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+  background: var(--pane);
+  border: var(--px) solid #000;
+  box-shadow: inset 0 0 0 var(--px) #555;
+  color: var(--ink);
+  scrollbar-width: thin;
+  scrollbar-color: #8b8b8b #000;
+}
+
+.detail::-webkit-scrollbar {
+  width: 10px;
+}
+
+.detail::-webkit-scrollbar-track {
+  background: #000;
+}
+
+.detail::-webkit-scrollbar-thumb {
+  background: #8b8b8b;
+  border: 2px solid #000;
+}
+
+.detail > * {
+  animation: rise 220ms var(--ease-out) both;
+}
+
+.detail > :nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.detail > :nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.detail > :nth-child(4) {
+  animation-delay: 120ms;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.detail h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--c, #fff);
+  text-shadow: 2px 2px 0 var(--cs, #3f3f3f);
+  text-wrap: balance;
+}
+
+.detail .meta {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.detail p,
+.detail li {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.detail p {
+  margin: 12px 0 0;
+  max-width: 62ch;
+}
+
+.detail ul {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail li {
+  position: relative;
+  padding-left: 20px;
+  max-width: 62ch;
+}
+
+.detail li + li {
+  margin-top: 6px;
+}
+
+.detail li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  background: var(--c, #fff);
+}
+
+.detail ul.tags {
+  columns: 2;
+  column-gap: 24px;
+}
+
+.detail ul.tags li {
+  break-inside: avoid;
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.detail .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.rarity-yellow {
+  --c: var(--yellow);
+  --cs: #3f3f15;
+}
+
+.rarity-aqua {
+  --c: var(--aqua);
+  --cs: #153f3f;
+}
+
+.rarity-white {
+  --c: #fff;
+  --cs: #3f3f3f;
+}
+
+/* Whole CV, a wider screen */
+.gui.book {
+  width: min(calc(var(--px) * 260), calc(100vw - 16px));
+  height: min(820px, calc(100dvh - 24px));
+}
+
+.book .detail {
+  padding: 22px 26px 28px;
+}
+
+.book section + section {
+  margin-top: 30px;
+}
+
+.book h3.chapter {
+  font-size: 30px;
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #3f3f15;
+}
+
+.book article {
+  margin-top: 16px;
+}
+
+.book article h4 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--aqua);
+  text-shadow: 2px 2px 0 #153f3f;
+}
+
+.book article .meta {
+  margin-top: 2px;
+}
+
+/* Loading screen: the dirt background from the game */
+.loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 18px;
+  justify-items: center;
+  background: #2a1e14 var(--dirt) 0 0 / 48px repeat;
+  image-rendering: pixelated;
+  z-index: 10;
+  transition: opacity 300ms ease;
+}
+
+.loading.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading p {
+  margin: 0;
+  font-size: 22px;
+  text-shadow: 2px 2px 0 #3f3f3f;
+}
+
+.loading .bar {
+  width: 240px;
+  height: 6px;
+  background: #555;
+  border: 2px solid #000;
+}
+
+.loading .bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #80ff20;
+  animation: load 900ms var(--ease-out) forwards;
+}
+
+@keyframes load {
+  to {
+    width: 100%;
+  }
+}
+
+.no-webgl .title h1 {
+  filter: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .title {
+    top: max(14px, env(safe-area-inset-top));
+    left: 16px;
+  }
+
+  .title h1 {
+    font-size: 40px;
+    filter: drop-shadow(2px 0 0 #1a1a1a) drop-shadow(-2px 0 0 #1a1a1a) drop-shadow(0 2px 0 #1a1a1a) drop-shadow(0 -2px 0 #1a1a1a);
+  }
+
+  .title p {
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .title .splash {
+    font-size: 15px;
+  }
+
+  .nametag {
+    padding: 1px 6px 2px;
+    font-size: 14px;
+  }
+
+  .hotbar-wrap {
+    gap: 6px;
+  }
+
+  .actions {
+    top: auto;
+    left: 16px;
+    right: 16px;
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--px) * 26 + 36px);
+    justify-content: center;
+  }
+
+  .actions .mc-button {
+    flex: 1;
+    font-size: 15px;
+  }
+
+  .chat {
+    left: 16px;
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--px) * 26 + 36px + var(--px) * 16 + 12px);
+    width: calc(100vw - 32px);
+  }
+
+  .chat p {
+    font-size: 15px;
+  }
+
+  .detail {
+    padding: 12px 12px 14px;
+  }
+
+  .detail p,
+  .detail li {
+    font-size: 16px;
+  }
+
+  .detail h3 {
+    font-size: 21px;
+  }
+
+  .detail ul.tags {
+    columns: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gui {
+    transform: translate(-50%, -50%);
+  }
+
+  .detail > *,
+  .title .splash {
+    animation: none;
+  }
+
+  .chat p {
+    @starting-style {
+      transform: none;
+    }
+  }
+
+  .loading .bar span {
+    animation: none;
+    width: 100%;
+  }
+}
