@@ -85,6 +85,94 @@ if (!renderer) {
   start();
 }
 
+/** A segment crosses a block when it enters the cell, grown enough for the guide's head. */
+function segmentHitsBlock(x0, z0, x1, z1, cx, cz) {
+  const pad = 0.72;
+  const minX = cx - pad;
+  const maxX = cx + pad;
+  const minZ = cz - pad;
+  const maxZ = cz + pad;
+  const dx = x1 - x0;
+  const dz = z1 - z0;
+  let t0 = 0;
+  let t1 = 1;
+  for (const [d, origin, min, max] of [
+    [dx, x0, minX, maxX],
+    [dz, z0, minZ, maxZ],
+  ]) {
+    if (Math.abs(d) < 1e-9) {
+      if (origin < min || origin > max) return false;
+      continue;
+    }
+    let near = (min - origin) / d;
+    let far = (max - origin) / d;
+    if (near > far) [near, far] = [far, near];
+    t0 = Math.max(t0, near);
+    t1 = Math.min(t1, far);
+    if (t0 > t1) return false;
+  }
+  return true;
+}
+
+function routeAround(world, x0, z0, x1, z1) {
+  const blocks = [...world.blocks()].map((cell) => cell.split(',').map(Number));
+  const clear = (ax, az, bx, bz) => !blocks.some(([cx, cz]) => segmentHitsBlock(ax, az, bx, bz, cx, cz));
+  if (clear(x0, z0, x1, z1)) return [{ x: x1, z: z1 }];
+
+  const sx = Math.round(x0);
+  const sz = Math.round(z0);
+  const gx = Math.round(x1);
+  const gz = Math.round(z1);
+  const key = (x, z) => `${x},${z}`;
+  const came = new Map();
+  const gScore = new Map([[key(sx, sz), 0]]);
+  const open = [{ x: sx, z: sz, f: Math.abs(gx - sx) + Math.abs(gz - sz) }];
+  const seen = new Set();
+  let found = false;
+  while (open.length) {
+    open.sort((a, b) => a.f - b.f);
+    const cur = open.shift();
+    const ck = key(cur.x, cur.z);
+    if (seen.has(ck)) continue;
+    seen.add(ck);
+    if (cur.x === gx && cur.z === gz) {
+      found = true;
+      break;
+    }
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = cur.x + dx;
+      const nz = cur.z + dz;
+      if ((nx !== sx || nz !== sz) && !world.walkable(nx, nz)) continue;
+      const nk = key(nx, nz);
+      const g = gScore.get(ck) + 1;
+      if (g >= (gScore.get(nk) ?? Infinity)) continue;
+      gScore.set(nk, g);
+      came.set(nk, ck);
+      open.push({ x: nx, z: nz, f: g + Math.abs(gx - nx) + Math.abs(gz - nz) });
+    }
+  }
+  if (!found) return [{ x: x1, z: z1 }];
+
+  const cells = [];
+  let cursor = key(gx, gz);
+  while (cursor && cursor !== key(sx, sz)) {
+    const [x, z] = cursor.split(',').map(Number);
+    cells.push({ x, z });
+    cursor = came.get(cursor);
+  }
+  cells.reverse();
+  const points = [{ x: x0, z: z0 }, ...cells.slice(0, -1), { x: x1, z: z1 }];
+  const out = [points[0]];
+  let i = 0;
+  while (i < points.length - 1) {
+    let j = points.length - 1;
+    while (j > i + 1 && !clear(points[i].x, points[i].z, points[j].x, points[j].z)) j -= 1;
+    out.push(points[j]);
+    i = j;
+  }
+  return out;
+}
+
 function requestChest(id) {
   if (!renderer) {
     ui.openChest(id);
@@ -176,6 +264,7 @@ function start() {
     const chest = createChest(c.kind, 100 + i * 10);
     chest.group.position.set(L.x, 0, L.z);
     chest.group.rotation.y = L.yaw;
+    world.block(L.x, L.z);
     scene.add(chest.group);
 
     const front = new THREE.Vector3(Math.sin(L.yaw), 0, Math.cos(L.yaw));
@@ -201,6 +290,7 @@ function start() {
   // Guide --------------------------------------------------------------------
   guide = createStickman();
   guide.setGround((x, z) => world.groundY(x, z));
+  guide.setRouter((x0, z0, x1, z1) => routeAround(world, x0, z0, x1, z1));
   guide.root.position.copy(SPAWN);
   scene.add(guide.root);
 

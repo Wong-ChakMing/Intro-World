@@ -121,7 +121,7 @@ export function buildWorld(scene) {
     }
   }
 
-  const trunks = new Set(treeSpots.map(([x, z]) => `${x},${z}`));
+  const blocked = new Set(treeSpots.map(([x, z]) => `${x},${z}`));
   const surface = [];
   const group = new THREE.Group();
   for (const [type, list] of Object.entries(buckets)) {
@@ -192,12 +192,23 @@ export function buildWorld(scene) {
   scene.add(group);
 
   const onLand = (x, z) => {
-    const h = heightAt.get(`${Math.round(x)},${Math.round(z)}`);
-    return h != null && h >= 0 && !trunks.has(`${Math.round(x)},${Math.round(z)}`);
+    const key = `${Math.round(x)},${Math.round(z)}`;
+    const h = heightAt.get(key);
+    return h != null && h >= 0 && !blocked.has(key);
   };
 
   return {
     surface,
+    /** Chests and trunks fill their grid cell, so a path can step around them. */
+    block(x, z) {
+      blocked.add(`${Math.round(x)},${Math.round(z)}`);
+    },
+    walkable(x, z) {
+      return onLand(x, z);
+    },
+    blocks() {
+      return blocked;
+    },
     /** Feet height on the island, or 0 over water. */
     groundY(x, z) {
       const h = heightAt.get(`${Math.round(x)},${Math.round(z)}`);
@@ -209,7 +220,7 @@ export function buildWorld(scene) {
       let best = null;
       let bestD = Infinity;
       for (const [cell, h] of heightAt) {
-        if (h < 0 || trunks.has(cell)) continue;
+        if (h < 0 || blocked.has(cell)) continue;
         const [cx, cz] = cell.split(',').map(Number);
         const d = (cx - x) ** 2 + (cz - z) ** 2;
         if (d < bestD) {

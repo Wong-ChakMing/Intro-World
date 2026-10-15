@@ -83,6 +83,9 @@ export function createStickman() {
     jump: 0,
     look: null,
     ground: null,
+    router: null,
+    waypoints: null,
+    waypoint: 0,
   };
 
   const api = {
@@ -94,7 +97,13 @@ export function createStickman() {
     setGround(fn) {
       state.ground = fn;
     },
+    setRouter(fn) {
+      state.router = fn;
+    },
     walkTo(x, z, onArrive, { instant = false } = {}) {
+      const points = !instant && state.router ? state.router(root.position.x, root.position.z, x, z) : [{ x, z }];
+      state.waypoints = points.length ? points : [{ x, z }];
+      state.waypoint = 0;
       state.target.set(x, 0, z);
       state.onArrive = onArrive;
       state.reachTarget = 0;
@@ -129,21 +138,29 @@ export function createStickman() {
     update(dt, time) {
       const p = root.position;
       if (state.mode === 'walk') {
-        const dx = state.target.x - p.x;
-        const dz = state.target.z - p.z;
-        const dist = Math.hypot(dx, dz);
-        const step = state.speed * dt;
-        state.faceTarget = Math.atan2(dx, dz);
-        if (dist <= step) {
-          p.x = state.target.x;
-          p.z = state.target.z;
+        let step = state.speed * dt;
+        while (step > 0 && state.waypoint < state.waypoints.length) {
+          const wp = state.waypoints[state.waypoint];
+          const dx = wp.x - p.x;
+          const dz = wp.z - p.z;
+          const dist = Math.hypot(dx, dz);
+          state.faceTarget = Math.atan2(dx, dz);
+          if (dist <= step) {
+            p.x = wp.x;
+            p.z = wp.z;
+            step -= dist;
+            state.waypoint += 1;
+          } else {
+            p.x += (dx / dist) * step;
+            p.z += (dz / dist) * step;
+            step = 0;
+          }
+        }
+        if (state.waypoint >= state.waypoints.length) {
           state.mode = 'idle';
           const cb = state.onArrive;
           state.onArrive = null;
           cb?.();
-        } else {
-          p.x += (dx / dist) * step;
-          p.z += (dz / dist) * step;
         }
       }
 
