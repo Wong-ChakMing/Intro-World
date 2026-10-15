@@ -45,8 +45,6 @@ const LAYOUT = {
 };
 const SPAWN = new THREE.Vector3(0, 0, 1);
 const HOME_FOCUS = new THREE.Vector3(0, 0.6, -1.6);
-const WALK_CENTER = new THREE.Vector2(0, -0.8);
-const WALK_RADIUS = 3;
 
 let pendingId = null;
 let firstClose = true;
@@ -202,6 +200,7 @@ function start() {
 
   // Guide --------------------------------------------------------------------
   guide = createStickman();
+  guide.setGround((x, z) => world.groundY(x, z));
   guide.root.position.copy(SPAWN);
   scene.add(guide.root);
 
@@ -247,10 +246,13 @@ function start() {
     raycaster.setFromCamera(ndc, camera);
     const hitChest = raycaster.intersectObjects(hitboxes, false)[0];
     const hitGuide = raycaster.intersectObject(guide.hit, false)[0];
+    const hitLand = raycaster.intersectObjects(world.surface, false)[0];
+    const nearer = (hit) => hit && (!hitLand || hit.distance < hitLand.distance);
+    if (hitGuide && nearer(hitGuide) && (!hitChest || hitGuide.distance < hitChest.distance)) return { type: 'guide', point: hitGuide.point };
+    if (hitChest && nearer(hitChest)) return { type: 'chest', id: hitChest.object.userData.id, point: hitChest.point };
+    if (hitLand) return { type: 'ground', point: hitLand.point };
     const point = raycaster.ray.intersectPlane(ground, new THREE.Vector3());
-    if (hitGuide && (!hitChest || hitGuide.distance < hitChest.distance)) return { type: 'guide', point: hitGuide.point };
-    if (hitChest) return { type: 'chest', id: hitChest.object.userData.id, point: hitChest.point };
-    if (point) return { type: 'ground', point };
+    if (point) return { type: 'water', point };
     return null;
   }
 
@@ -275,7 +277,8 @@ function start() {
     canvas.classList.toggle('hovering', hit?.type === 'chest' || hit?.type === 'guide');
     if (hit?.point) {
       lookPoint.copy(hit.point);
-      if (hit.type === 'ground') lookPoint.y = 1.2;
+      if (hit.type === 'ground') lookPoint.y = Math.max(hit.point.y, 1.2);
+      if (hit.type === 'water') lookPoint.y = 1.2;
       guide.lookAt(lookPoint);
     }
   });
@@ -298,13 +301,12 @@ function start() {
     else if (hit.type === 'guide') {
       guide.hop();
       ui.say(GUIDE_LINES[guideLine++ % GUIDE_LINES.length]);
-    } else if (hit.type === 'ground') {
-      const p = new THREE.Vector2(hit.point.x, hit.point.z).sub(WALK_CENTER);
-      if (p.length() > WALK_RADIUS) p.setLength(WALK_RADIUS);
-      p.add(WALK_CENTER);
+    } else if (hit.type === 'ground' || hit.type === 'water') {
+      const spot = world.place(hit.point.x, hit.point.z);
+      if (!spot) return;
       pendingId = null;
       guide.reach(false);
-      guide.walkTo(p.x, p.y, null, { instant: reduceMotion.matches });
+      guide.walkTo(spot.x, spot.z, null, { instant: reduceMotion.matches });
     }
   });
 

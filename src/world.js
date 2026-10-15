@@ -121,10 +121,14 @@ export function buildWorld(scene) {
     }
   }
 
+  const trunks = new Set(treeSpots.map(([x, z]) => `${x},${z}`));
+  const surface = [];
   const group = new THREE.Group();
   for (const [type, list] of Object.entries(buckets)) {
     if (!list.length) continue;
-    group.add(instanced(box, mats[type], list, { cast: type !== 'gravel' }));
+    const mesh = instanced(box, mats[type], list, { cast: type !== 'gravel' });
+    group.add(mesh);
+    if (type === 'grass' || type === 'sand' || type === 'planks') surface.push(mesh);
   }
 
   // Plants: crossed quads, like Minecraft's flowers and short grass.
@@ -187,7 +191,34 @@ export function buildWorld(scene) {
 
   scene.add(group);
 
+  const onLand = (x, z) => {
+    const h = heightAt.get(`${Math.round(x)},${Math.round(z)}`);
+    return h != null && h >= 0 && !trunks.has(`${Math.round(x)},${Math.round(z)}`);
+  };
+
   return {
+    surface,
+    /** Feet height on the island, or 0 over water. */
+    groundY(x, z) {
+      const h = heightAt.get(`${Math.round(x)},${Math.round(z)}`);
+      return h != null && h >= 0 ? h : 0;
+    },
+    /** Keep a click on dry land. Ocean clicks move to the nearest shore. */
+    place(x, z) {
+      if (onLand(x, z)) return { x, z };
+      let best = null;
+      let bestD = Infinity;
+      for (const [cell, h] of heightAt) {
+        if (h < 0 || trunks.has(cell)) continue;
+        const [cx, cz] = cell.split(',').map(Number);
+        const d = (cx - x) ** 2 + (cz - z) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = { x: cx, z: cz };
+        }
+      }
+      return best;
+    },
     update(dt, t) {
       waterTex.offset.x = (t * 0.02) % 1;
       waterTex.offset.y = Math.sin(t * 0.3) * 0.02;

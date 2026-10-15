@@ -82,6 +82,7 @@ export function createStickman() {
     wave: 0,
     jump: 0,
     look: null,
+    ground: null,
   };
 
   const api = {
@@ -90,6 +91,9 @@ export function createStickman() {
     get busy() {
       return state.mode === 'walk';
     },
+    setGround(fn) {
+      state.ground = fn;
+    },
     walkTo(x, z, onArrive, { instant = false } = {}) {
       state.target.set(x, 0, z);
       state.onArrive = onArrive;
@@ -97,6 +101,7 @@ export function createStickman() {
       if (instant) {
         root.position.x = x;
         root.position.z = z;
+        root.position.y = state.ground?.(x, z) ?? 0;
         state.mode = 'idle';
         const cb = state.onArrive;
         state.onArrive = null;
@@ -141,6 +146,9 @@ export function createStickman() {
           p.z += (dz / dist) * step;
         }
       }
+
+      const groundY = state.ground?.(p.x, p.z) ?? 0;
+      p.y = damp(p.y, groundY, 10, dt);
 
       state.facing = dampAngle(state.facing, state.faceTarget, 12, dt);
       root.rotation.y = state.facing;
